@@ -47,7 +47,7 @@ class InstagramBot():
     def put_exact_like(self, url):
         browser = self.browser
         browser.get(url)
-        time.sleep(2)
+        time.sleep(1)
         wrong_path = '/html/body/div[1]/section/main/div/div/h2'
         if self.element_exists(wrong_path):
             print('There is not post with this URL')
@@ -56,7 +56,7 @@ class InstagramBot():
             browser.find_element_by_xpath(
                 '/html/body/div[1]/section/main/div/div[1]/article/div/div[2]/div/div[2]/section[1]/span[1]/button').click()
             print(f'Post {url} is liked!')
-            time.sleep(2)
+            time.sleep(1)
             self.close_browser()
 
     def get_all_post_urls(self, userurl):
@@ -68,7 +68,7 @@ class InstagramBot():
             print('There is no user with this URL')
             self.close_browser()
         else:
-            print('User is found, putting likes!')
+            print('User is found!')
             posts_urls = set()
             posts_count = int(browser.find_element_by_xpath(
                 "/html/body/div[1]/section/main/div/header/section/ul/li[1]/span/span").text)
@@ -94,7 +94,7 @@ class InstagramBot():
         file_name = userurl.split('/')[-2]
         with open(f'{file_name}.txt') as file:
             content = file.readlines()
-            for url in content[:6]:
+            for url in content:
                 try:
                     browser.get(url[:-1:1])
                     time.sleep(1)
@@ -105,6 +105,7 @@ class InstagramBot():
                 except Exception as ex:
                     print(ex)
                     self.close_browser()
+                time.sleep(random.randrange(80,100))
         self.close_browser()
 
     def download_content_from_user(self, userurl):
@@ -182,28 +183,4 @@ class InstagramBot():
                     with open(f'Files/{cnt}_img.jpg', 'wb') as image_file:
                         image_file.write(requests.get(url).content)
                         cnt += 1
-
-        self.close_browser()
-
-
-bot = InstagramBot()
-bot.login()
-print("""Hello, our bot can do diffrent things!
-Print 1 if you want to give like to exact post.
-Print 2 if you want to like all posts of user.
-Print 3 if you want to download all posts of user.""")
-res = input()
-try:
-    res = int(res)
-    if res < 1 or res > 3:
-        raise Exception
-    if res == 1:
-        bot.put_exact_like(input('Give us URL of the post you want to like.\n'))
-    if res == 2:
-        bot.likes_for_all_posts(input('Give us URL of the user.\n'))
-    if res == 3:
-        bot.download_content_from_user(input('Give us URL of the user.\n'))
-
-        
-except Exception:
-    print('You input is invalid!')
+            self.close_browser()
