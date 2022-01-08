@@ -36,29 +36,6 @@ class InstagramBot():
 
         time.sleep(2)
 
-    def like_photo_by_hashtag(self, hashtag):
-        browser = self.browser
-        browser.get(f"https://www.instagram.com/explore/tags/{hashtag}/")
-        time.sleep(5)
-
-        for _ in range(1, 4):
-            browser.execute_script(
-                'window.scrollTo(0,document.body.scrollHeight);')
-            time.sleep(random.randrange(3, 5))
-
-        hrefs = browser.find_elements_by_tag_name('a')
-        post_urls = [items.get_attribute(
-            'href') for items in hrefs if '/p/' in items.get_attribute('href')]
-        for href in post_urls:
-            try:
-                browser.get(href)
-                like_button = browser.find_element_by_xpath(
-                    '/html/body/div[1]/section/main/div/div[1]/article/div/div[2]/div/div[2]/section[1]/span[1]/button').click()
-            except Exception as ex:
-                print(ex)
-                self.close_browser()
-            time.sleep(random.randrange(80, 100))
-
     def element_exists(self, url):
         browser = self.browser
         try:
@@ -73,12 +50,12 @@ class InstagramBot():
         time.sleep(2)
         wrong_path = '/html/body/div[1]/section/main/div/div/h2'
         if self.element_exists(wrong_path):
-            print('Такого поста не существует, проверьте URL')
+            print('There is not post with this URL')
             self.close_browser()
         else:
             browser.find_element_by_xpath(
                 '/html/body/div[1]/section/main/div/div[1]/article/div/div[2]/div/div[2]/section[1]/span[1]/button').click()
-            print(f'Лайк к посту {url} поставлен')
+            print(f'Post {url} is liked!')
             time.sleep(2)
             self.close_browser()
 
@@ -88,16 +65,15 @@ class InstagramBot():
         time.sleep(1)
         wrong_path = '/html/body/div[1]/section/main/div/div/h2'
         if self.element_exists(wrong_path):
-            print('Такого пользователя не существует, проверьте URL')
+            print('There is no user with this URL')
             self.close_browser()
         else:
-            print('Пользователь найден, ставим лайки!')
+            print('User is found, putting likes!')
             posts_urls = set()
             posts_count = int(browser.find_element_by_xpath(
                 "/html/body/div[1]/section/main/div/header/section/ul/li[1]/span/span").text)
             loops_count = posts_count // 12 + int(posts_count % 12 != 0)
-            print(loops_count)
-            for i in range(1, loops_count + 1):
+            for _ in range(1, loops_count + 1):
                 hrefs = browser.find_elements_by_tag_name('a')
                 hrefs = [items.get_attribute(
                     'href') for items in hrefs if '/p/' in items.get_attribute('href')]
@@ -106,7 +82,6 @@ class InstagramBot():
                 browser.execute_script(
                     'window.scrollTo(0,document.body.scrollHeight);')
                 time.sleep(random.randrange(1, 3))
-                print(f'Итерация №{i}')
             file_name = userurl.split('/')[-2]
             with open(f'{file_name}.txt', 'w') as file:
                 for href in posts_urls:
@@ -126,7 +101,7 @@ class InstagramBot():
                     like_button = '/html/body/div[1]/section/main/div/div[1]/article/div/div[2]/div/div[2]/section[1]/span[1]/button'
                     browser.find_element_by_xpath(like_button).click()
                     time.sleep(1)
-                    print(f'Лайк на пост {url[:-1:1]} поставлен!')
+                    print(f'Post {url[:-1:1]} is liked!')
                 except Exception as ex:
                     print(ex)
                     self.close_browser()
@@ -134,7 +109,7 @@ class InstagramBot():
 
     def download_content_from_user(self, userurl):
         browser = self.browser
-        # self.get_all_post_urls(userurl)
+        self.get_all_post_urls(userurl)
         time.sleep(3)
         file_name = userurl.split('/')[-2]
         photos = set()
@@ -213,5 +188,22 @@ class InstagramBot():
 
 bot = InstagramBot()
 bot.login()
-# bot.put_exact_like('https://www.instagram.com/p/CYM6mkjpdD6/')
-bot.download_content_from_user('https://www.instagram.com/karna.val/')
+print("""Hello, our bot can do diffrent things!
+Print 1 if you want to give like to exact post.
+Print 2 if you want to like all posts of user.
+Print 3 if you want to download all posts of user.""")
+res = input()
+try:
+    res = int(res)
+    if res < 1 or res > 3:
+        raise Exception
+    if res == 1:
+        bot.put_exact_like(input('Give us URL of the post you want to like.\n'))
+    if res == 2:
+        bot.likes_for_all_posts(input('Give us URL of the user.\n'))
+    if res == 3:
+        bot.download_content_from_user(input('Give us URL of the user.\n'))
+
+        
+except Exception:
+    print('You input is invalid!')
