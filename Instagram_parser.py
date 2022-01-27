@@ -105,7 +105,74 @@ class InstagramBot():
                 except Exception as ex:
                     print(ex)
                     self.close_browser()
-                time.sleep(random.randrange(80,100))
+                time.sleep(random.randrange(80, 100))
+        self.close_browser()
+
+    def download_content_from_post(self, posturl):
+        browser = self.browser
+        photos = set()
+        browser.get(posturl)
+        time.sleep(1)
+        next_image_button = '/html/body/div[1]/section/main/div/div[1]/article/div/div[1]/div/div[1]/div[2]/div/button'
+        other_imgage_button = '/html/body/div[1]/section/main/div/div[1]/article/div/div[1]/div/div[1]/div[2]/div/button[2]'
+        if not self.element_exists(next_image_button):
+            with open('photos_xpath.txt') as file:
+                xpaths = file.read().split('\n')
+                for xpath in xpaths:
+                    if self.element_exists(xpath):
+                        with open('images_urls.txt', 'a') as img_file:
+                            element = browser.find_element_by_xpath(
+                                xpath).get_attribute('src') + '\n'
+                            if element in photos:
+                                continue
+                            img_file.write(element)
+                            photos.add(element)
+                        break
+
+        else:
+            with open('photos_xpath.txt') as file:
+                xpaths = file.read().split('\n')
+                for xpath in xpaths:
+                    if self.element_exists(xpath):
+                        with open('images_urls.txt', 'a') as imgaes_file:
+                            element = browser.find_element_by_xpath(
+                                xpath).get_attribute('src') + '\n'
+                            if element in photos:
+                                continue
+                            imgaes_file.write(element)
+                            photos.add(element)
+                        break
+            browser.find_element_by_xpath(
+                next_image_button).click()
+            flag = True
+            while flag:
+                time.sleep(0.5)
+                flag = self.element_exists(
+                    other_imgage_button)
+                with open('photos_xpath.txt') as file:
+                    xpaths = file.read().split('\n')
+                    for xpath in xpaths:
+                        if self.element_exists(xpath):
+                            with open('images_urls.txt', 'a') as imgaes_file:
+                                element = browser.find_element_by_xpath(
+                                    xpath).get_attribute('src') + '\n'
+                                if element in photos:
+                                    continue
+                                imgaes_file.write(element)
+                                photos.add(element)
+                            break
+                if flag:
+                    browser.find_element_by_xpath(
+                        other_imgage_button).click()
+
+        with open('images_urls.txt', 'r') as file:
+            cnt = 1
+            content = file.readlines()
+            for cur in content:
+                url = cur[:-2]
+                with open(f'Files/{cnt}_img.jpg', 'wb') as image_file:
+                    image_file.write(requests.get(url).content)
+                    cnt += 1
         self.close_browser()
 
     def download_content_from_user(self, userurl):
